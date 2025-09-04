@@ -1,0 +1,94 @@
+# NeuroPrize Strategy Configuration Template
+# ==========================================
+#
+# This YAML file defines the pricing strategy for the dynamic pricing engine.
+# Copy this template and customize it for your use case.
+#
+# Usage:
+#   from neuroprice import load_strategy, PricingEngine
+#   config = load_strategy("my_strategy.yaml")
+#   engine = PricingEngine(config)
+
+version: "1.0"
+name: "retail_pricing_strategy"
+
+# Model Configuration
+# -------------------
+# type: "rl" (Reinforcement Learning), "causal" (Causal Inference), or "hybrid" (both)
+# algorithm: For RL models - "PPO", "A2C", or "DQN"
+model:
+  type: "rl"
+  algorithm: "PPO"
+
+# Price Boundaries
+# ----------------
+# Define the range of possible prices and increment step
+pricing:
+  min_price: 5.0
+  max_price: 100.0
+  price_step: 0.50
+  currency: "USD"
+
+# Demand Configuration
+# --------------------
+# elasticity: Price elasticity of demand (should be negative)
+#   -1.0 means 1% price increase leads to 1% demand decrease
+# base_demand: Expected demand at reference price
+demand:
+  elasticity: -1.5
+  base_demand: 1000
+  seasonality:
+    enabled: true
+    period: 7  # days
+
+# Inventory Constraints
+# ---------------------
+# initial_stock: Number of items available at start
+# salvage_value: Value per unsold item after deadline
+# deadline_days: Selling period in days (optional)
+inventory:
+  initial_stock: 150
+  salvage_value: 2.0
+  deadline_days: 30
+
+# Reinforcement Learning Configuration
+# ------------------------------------
+# Only used when model.type is "rl" or "hybrid"
+rl_config:
+  learning_rate: 0.0003
+  gamma: 0.99          # Discount factor for future rewards
+  n_steps: 2048        # Steps per training update
+  batch_size: 64
+  training_episodes: 10000
+
+# Causal Inference Configuration
+# ------------------------------
+# Only used when model.type is "causal" or "hybrid"
+causal_config:
+  treatment_variable: "price"
+  outcome_variable: "demand"
+  confounders:
+    - "day_of_week"
+    - "competitor_price"
+    - "promotion_active"
+  estimation_method: "backdoor.linear_regression"
+
+# Feature Configuration
+# ---------------------
+# Define which columns are expected in your input DataFrame
+features:
+  required:
+    - "product_id"
+    - "current_price"
+    - "inventory_level"
+  optional:
+    - "competitor_price"
+    - "day_of_week"
+    - "promotion_active"
+
+# Output Configuration
+# --------------------
+# Column names for the prediction results
+output:
+  price_column: "recommended_price"
+  confidence_column: "confidence_score"
