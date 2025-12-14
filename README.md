@@ -1,29 +1,36 @@
 # neuroprice
 
-A Dynamic Pricing Engine using Reinforcement Learning and Causal Inference.
+A production-ready Dynamic Pricing Engine using Reinforcement Learning and Causal Inference.
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-240%20passed-brightgreen.svg)](#development)
 
-## Installation & Quick Start
+## What is this?
 
-### Installation
+**neuroprice** is a Python library for building intelligent dynamic pricing systems. It combines:
+
+- **Reinforcement Learning** (PPO, A2C, DQN) — learns optimal pricing through simulated interaction
+- **Causal Inference** (EconML Double ML) — understands *true* price-demand relationships, controlling for confounders
+- **Hybrid mode** — blends both approaches for robust pricing
+
+Use it for e-commerce, SaaS, travel, hospitality, or any domain where price optimization matters.
+
+## Installation
 
 ```bash
 pip install neuroprice
 ```
 
-For development with testing tools:
+For development:
 
 ```bash
 pip install neuroprice[dev]
 ```
 
-### Quick Start
+## Quick Start
 
-#### 1. Create a Strategy File
-
-Create a YAML file defining your pricing strategy:
+### 1. Define a Strategy
 
 ```yaml
 # my_strategy.yaml
@@ -31,8 +38,8 @@ version: "1.0"
 name: "retail_pricing"
 
 model:
-  type: "rl"
-  algorithm: "PPO"
+  type: "rl"          # "rl", "causal", or "hybrid"
+  algorithm: "PPO"    # "PPO", "A2C", or "DQN"
 
 pricing:
   min_price: 10.0
@@ -46,6 +53,7 @@ demand:
 inventory:
   initial_stock: 500
   salvage_value: 5.0
+  deadline_days: 30
 
 features:
   required:
@@ -58,155 +66,216 @@ output:
   confidence_column: "confidence"
 ```
 
-See `templates/strategy_template.yaml` for a complete example with all options.
-
-#### 2. Load Strategy and Create Engine
+### 2. Train and Predict
 
 ```python
 import pandas as pd
 from neuroprice import load_strategy, PricingEngine
 
-# Load your strategy configuration
+# Load strategy
 config = load_strategy("my_strategy.yaml")
 
-# Create the pricing engine
+# Create and train engine
 engine = PricingEngine(config)
-
-# Train on historical data
 historical_data = pd.read_csv("sales_history.csv")
 engine.train(historical_data)
-```
 
-#### 3. Generate Price Recommendations
-
-```python
-# Your current product data
+# Generate recommendations (original columns preserved, new columns appended)
 products = pd.DataFrame({
     "product_id": ["SKU001", "SKU002", "SKU003"],
     "current_price": [49.99, 79.99, 29.99],
     "inventory_level": [100, 50, 200],
 })
 
-# Get recommendations (original columns preserved, new columns appended)
 recommendations = engine.predict(products)
 print(recommendations[["product_id", "recommended_price", "confidence"]])
 ```
 
-#### 4. State Management & Rollback
+### 3. Evaluate Model Quality
 
 ```python
-# Save current state
-engine.save_state("after_initial_training")
+from neuroprice import mae, rmse, mape, revenue_comparison
 
-# Later, rollback if needed
-engine.rollback("after_initial_training")
+# Evaluate predictions against actual outcomes
+metrics = engine.evaluate(test_data, actual_demand_column="demand")
+print(metrics)
+# {'mae': 4.2, 'rmse': 6.1, 'mape': 0.08, 'revenue_comparison': {...}}
 
-# List available states
-print(engine.list_states())
+# Or use standalone metrics
+rev = revenue_comparison(actual_prices, recommended_prices, demands)
+print(f"Revenue improvement: {rev['improvement_pct']:.1f}%")
+```
+
+### 4. Save/Load and Rollback
+
+```python
+# Save trained model to disk
+engine.save_model("my_model")
+
+# Load later
+engine2 = PricingEngine(config)
+engine2.load_model("my_model")
+
+# State management for config rollback
+engine.save_state("before_experiment")
+engine.update_config(pricing__min_price=15.0)
+engine.rollback("before_experiment")
 ```
 
 ## Features
 
-- **Multiple Model Types**: Choose from RL, Causal Inference, or Hybrid approaches
-- **Pandas-First API**: Input and output are DataFrames with preserved column integrity
-- **Configurable via YAML**: Define pricing strategies in human-readable configuration files
-- **State Management**: Save and restore configuration states for easy rollback
-- **Graceful Error Handling**: Helpful error messages guide you when things go wrong
+| Feature | Description |
+|---------|-------------|
+| **3 Model Types** | RL (PPO/A2C/DQN), Causal (EconML DML), Hybrid |
+| **Rich RL Observations** | 7-feature state: inventory, time, price, demand trend, volatility, price gap, depletion rate |
+| **CATE Pricing** | Heterogeneous treatment effects for per-product optimal pricing |
+| **Reward Shaping** | Inventory waste penalties, price smoothness regularization |
+| **Data Validation** | Automatic NaN filling, outlier detection, column validation |
+| **Evaluation Metrics** | MAE, RMSE, MAPE, revenue comparison, price distribution analysis |
+| **Model Persistence** | Save/load trained models to disk |
+| **State Rollback** | Checkpoint and restore configurations |
+| **Synthetic Data** | Generate test data with known causal structure |
+| **Pandas-First** | Input/output are DataFrames, columns always preserved |
+| **Type-Safe Config** | Pydantic v2 validation with YAML strategy files |
+| **Logging** | Structured Python logging throughout |
 
 ## Model Types
 
 | Type | Description | Best For |
 |------|-------------|----------|
-| `rl` | Reinforcement Learning (PPO, A2C, DQN) | Learning optimal pricing through interaction |
-| `causal` | Causal Inference (DoWhy) | Understanding true price-demand relationships |
-| `hybrid` | Combination of RL + Causal | Balanced approach with exploration and causal understanding |
+| `rl` | Reinforcement Learning | Learning optimal pricing through simulated interaction |
+| `causal` | Causal Inference (EconML) | Understanding true price-demand with confounders |
+| `hybrid` | RL + Causal blended | Balanced exploration with causal grounding |
 
-## Error Handling
+### RL Module
 
-```python
-from neuroprice import load_strategy
-from neuroprice.exceptions import StrategyFileNotFoundError
+The RL module wraps stable-baselines3 with a custom Gymnasium environment:
 
-try:
-    config = load_strategy("nonexistent.yaml")
-except StrategyFileNotFoundError as e:
-    print(f"Error: {e.message}")
-    # Error message includes guidance on creating a strategy file
-```
+- **Rich observation space** (7 features): normalized inventory, time, price, recent demand trend, price gap from reference, inventory depletion rate, demand volatility
+- **Log-linear demand model**: `D = D_base × (P/P_ref)^ε` with Poisson stochasticity
+- **Reward shaping**: inventory waste penalty (scales near deadline), price smoothness penalty
+- **Confidence**: entropy-based (PPO/A2C) or Q-value spread (DQN), not heuristic
+
+### Causal Module
+
+The causal module uses EconML's Double Machine Learning:
+
+- **Confounder-controlled**: estimates true price→demand effect, not just correlation
+- **CATE estimation**: heterogeneous treatment effects across product segments
+- **Feature engineering**: polynomial/interaction terms from confounders
+- **Diagnostics**: first-stage R², treatment effect significance, heterogeneity stats
 
 ## API Reference
 
 ### Main Functions
 
-- `load_strategy(file_path: str) -> StrategyConfig` - Load pricing strategy from YAML
-- `save_strategy(config, file_path: str)` - Save strategy to YAML file
+```python
+load_strategy(file_path) -> StrategyConfig
+save_strategy(config, file_path)
+validate_strategy_dict(config_dict) -> StrategyConfig
+generate_synthetic_data(n_samples, ...) -> DataFrame
+```
 
-### PricingEngine Class
+### PricingEngine
 
 ```python
 engine = PricingEngine(config: StrategyConfig)
+
+# Training
+engine.train(historical_data, verbose=0) -> PricingEngine
+
+# Prediction
+engine.predict(df) -> DataFrame              # Single batch
+engine.predict_batch(dfs) -> list[DataFrame]  # Multiple batches
+
+# Evaluation
+engine.evaluate(test_df, actual_demand_column) -> dict
+
+# Model persistence
+engine.save_model(path)
+engine.load_model(path)
+
+# State management
+engine.save_state(name)
+engine.rollback(state_name) -> PricingEngine
+engine.list_states() -> list[str]
+
+# Configuration
+engine.update_config(**kwargs) -> PricingEngine
+engine.get_model_info() -> dict
 ```
 
-**Methods:**
-- `train(historical_data: pd.DataFrame) -> PricingEngine` - Train the model
-- `predict(df: pd.DataFrame) -> pd.DataFrame` - Generate price predictions
-- `save_state(name: str)` - Save current configuration state
-- `rollback(state_name: str) -> PricingEngine` - Restore saved state
-- `list_states() -> list[str]` - List available states
-- `get_model_info() -> dict` - Get model configuration info
+### Metrics
 
-## Dependencies
+```python
+from neuroprice import mae, rmse, mape, revenue_comparison, price_distribution_summary
 
-- pandas >= 2.0
-- numpy >= 1.24
-- stable-baselines3 >= 2.0
-- gymnasium >= 0.29
-- econml >= 0.15
-- scikit-learn >= 1.6
-- pydantic >= 2.0
-- PyYAML >= 6.0
-
-## Development
-
-### Running Tests
-
-```bash
-pip install -e ".[dev]"
-pytest tests/
+mae(y_true, y_pred) -> float
+rmse(y_true, y_pred) -> float
+mape(y_true, y_pred) -> float
+revenue_comparison(actual, recommended, demands) -> dict
+price_distribution_summary(prices) -> dict
 ```
 
-### Project Structure
+### Data Utilities
+
+```python
+from neuroprice import (
+    validate_input_data,
+    detect_outliers,
+    fill_missing_values,
+    generate_synthetic_data,
+    split_train_test,
+)
+```
+
+## Project Structure
 
 ```
 neuroprice/
 ├── src/neuroprice/
-│   ├── __init__.py      # Main API
-│   ├── core.py          # PricingEngine class
-│   ├── io.py            # Strategy file loading
-│   ├── models.py        # Pydantic configuration models
-│   ├── state.py         # State management
-│   ├── exceptions.py    # Custom exceptions
-│   ├── rl/              # Reinforcement Learning module
-│   └── causal/          # Causal Inference module
-├── templates/           # Strategy file templates
-└── tests/               # Test suite
+│   ├── __init__.py          # Public API
+│   ├── core.py              # PricingEngine class
+│   ├── models.py            # Pydantic config models
+│   ├── io.py                # YAML strategy I/O
+│   ├── state.py             # State management
+│   ├── exceptions.py        # Custom exceptions
+│   ├── metrics.py           # Evaluation metrics
+│   ├── data_utils.py        # Data validation & synthetic data
+│   ├── rl/
+│   │   ├── environment.py   # Gymnasium pricing environment
+│   │   └── agents.py        # SB3 RL agent wrappers
+│   └── causal/
+│       └── estimator.py     # EconML causal estimator
+├── templates/
+│   └── strategy_template.yaml
+├── tests/                   # 240 tests
+└── pyproject.toml
 ```
 
-## Background: Dynamic Pricing Theory
+## Dependencies
 
-This library is built on dynamic pricing models characterized by:
+- Python >= 3.10
+- pandas >= 2.0, numpy >= 1.24
+- stable-baselines3 >= 2.0, gymnasium >= 0.29
+- econml >= 0.15, scikit-learn >= 1.6
+- pydantic >= 2.0, PyYAML >= 6.0
 
-1. **Unlimited potential customers**: Population size is not a model parameter
-2. **Single item type**: Focused optimization for one product category
-3. **Monopoly situation**: No direct competition modeling
-4. **Myopic customers**: Customers buy when price ≤ willingness to pay
+## Development
 
-The mathematical foundations include:
-- Deterministic models with time-dated items
-- Stochastic models with Poisson arrival processes
-- Salvage value optimization
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
 
-For more details, see the academic literature on revenue management and the included `dynamic_pricing_algo.txt` reference material.
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=neuroprice --cov-report=term-missing
+
+# Lint
+ruff check src/ tests/
+```
 
 ## License
 
