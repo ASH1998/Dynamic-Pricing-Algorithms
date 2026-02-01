@@ -1,0 +1,2173 @@
+Chapter 2 
+Dynamic Pricing Models 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Abstract   In this chapter, some pricing models are presented that are character-
+ized by the following assumptions: (i) the number of potential customers is not 
+limited, and as a consequence, the size of the population is not a parameter of the 
+model, (ii) only one type of item is concerned, (iii) a monopoly situation is con-
+sidered, and (iv) customers buy items as soon as the price is less than or equal to 
+the price they are prepared to pay (myopic customers). A deterministic model with 
+time-dated items is presented and illustrated first. To build this model, the rela-
+tionship between the price per item and demand has to be established. Then, the 
+stochastic version of the same model is analyzed. A Poisson process generates 
+customers’ arrivals. Finally, a stochastic model with salvage value where the price 
+is a function of inventory level is considered. Detailed algorithms, numerical ex-
+amples and figures are provided for each model. These models provide practical 
+insights into pricing mechanisms. 
+
+2.1 Introduction 
+
+Any dynamic pricing model requires establishing how demand responds to 
+changes in price. This chapter is dedicated to mathematical models of monopoly 
+systems. The reader will notice that strong assumptions are made to obtain tracta-
+ble models. Indeed, such mathematical models can hardly represent real-life situa-
+tions, but they do illustrate the relationship between price and customers’ purchas-
+ing behavior. 
+
+In this chapter we consider the case of time-dated items, i.e., items that must be 
+sold before a given point in time, say T. Furthermore, there is no supply option be-
+fore time T. This situation is common in the food industry, the toy business (when 
+toys must be sold before Christmas, for instance), marketing products (products 
+associated with special events like movies, football matches, etc.), fashion apparel 
+
+
+
+42       2 Dynamic Pricing Models 
+
+(because the selling period ends when a season finishes), airplane tickets (which 
+are obsolete when the plane takes off), to quote just a few. 
+
+The goal is to find a strategy (dynamic pricing, also called yield management 
+or revenue management) that leads to the maximum expected revenue by time T, 
+assuming that the process starts at time 0. This strategy consists in selecting a set 
+of adequate prices for the items that vary according to the number of unsold items 
+and, in some cases, to the time. At a given point in time, we assume that the price 
+of an item is a non-increasing function of the inventory level. For a given inven-
+tory level, prices are going down over time. 
+
+Indeed, a huge number of models exist, depending of the situation at hand and 
+the assumptions made to reach a working model. For instance, selling airplane 
+tickets requires a pricing strategy that leads to very cheap tickets as takeoff nears, 
+while selling fashion apparel is less constrained since a second market exists, i.e., 
+it is still possible to sell these items at discount after the deadline. 
+
+For the models presented in this chapter, we assume that: 
+• The number of potential customers is infinite. As a consequence, the size of the 
+
+population does not belong to the set of parameters of the models. 
+• A single type of item is concerned and its sales are not affected by other types 
+
+of items. 
+• We are in a monopoly situation, which means that there is no competition with 
+
+other companies selling the same type of item. Note that, due to price discrimi-
+nation, a company can be monopolistic in one segment of the population while 
+other companies sell the same type of item with slight differences to other seg-
+ments. This requires a sophisticated fencing strategy that prevents customers 
+from moving to a cheaper segment. 
+
+• Customers are myopic, which means that they buy as soon as the price is less 
+than the one they are prepared to pay. Strategic customers who optimize their 
+purchasing behavior in response to the pricing strategy of the company are not 
+considered in this chapter; game theory is used when strategic customers are 
+concerned. 
+To summarize, this chapter provides an insight into mathematical pricing mod-
+
+els. Note also that few convenient models exist without the assumptions presented 
+above, that is to say a monopoly situation, an infinite number of potential custom-
+ers who are myopic and no supply option. The reader will also observe that nega-
+tive exponential functions are often used to make the model manageable and few 
+persuasive arguments are proposed to justify this choice: this is why we consider 
+that most of these models are more useful to understand dynamic pricing than to 
+treat real-life situations. 
+
+
+
+2.2 Time-dated Items: a Deterministic Model       43 
+
+2.2 Time-dated Items: a Deterministic Model 
+
+2.2.1 Problem Setting 
+
+In this model, we know the initial inventory s0 : it is the maximal quantity that can 
+be sold by time T. We assume that demands appear at times 1, 2,L ,T , and xt  
+represents the demand at time t. The demands are real and positive. The price of 
+one item at time t is denoted by pt , and this price is a function of the demand and 
+the time: pt = p ( xt , t ) . 
+
+We assume that there exists a one-to-one relationship between demand and 
+price at any time t ∈{1, 2,LT }. Thus, xt = x ( pt , t )  is the relation that pro-
+vides the demand when the price is fixed. 
+
+We also assume that: 
+• x ( p, t )  is continuously differentiable with regard to p. 
+• x ( p, t )  is lower and upper bounded and tends to zero as p tends to its maxi-
+
+mal value. 
+Finally, the problem can be expressed as follows: 
+
+T
+Maximize ∑ pt xt  (2.1) 
+
+t=1
+
+subject to: 
+
+T
+
+∑ xt ≤ s0  (2.2) 
+t=1
+
+xt ≥ 0  for t∈{1, 2,LT }  (2.3) 
+
+x ≤ x ( pmin
+t t , t )  for t∈{1, 2,LT }  (2.4) 
+
+where pmin
+t  is the minimal value of pt . 
+
+Criterion 2.1 means that the objective is to maximize the total revenue. Con-
+straint 2.2 guarantees that the total demand at horizon T does not exceed the initial 
+inventory. Constraints 2.3 are introduced to make sure that demands are never less 
+than zero. Finally, Constraints 2.4 provide the upper bound of the demand at any 
+time. 
+
+
+
+44       2 Dynamic Pricing Models 
+
+2.2.2 Solving the Problem: Overall Approach 
+
+To solve this problem, we use the Kuhn and Tucker approach based on Lagrange 
+multipliers. Since pt  is a function of xt , then pt xt  is the function of xt . Taking 
+into account the constraints of the problem, the Lagrangian is: 
+
+T T
+L ( x1,L , xT , λ, μ1,L, μT , l1,L , lT ) =∑ p ( xt , t ) xt − λ (∑ xt − s0 )
+
+t=1 t=1  (2.5) 
+T T
+
++∑μ −∑ − in
+t xt lt ( xt x ( pm
+
+t , t ) )
+t=1 t=1
+
+The goal is to solve the T equations: 
+
+∂ L
+= 0  for t∈{1, 2,LT }  (2.6) 
+
+∂ xt
+
+Together with the 2T +1 complementary slackness conditions: 
+T
+
+λ (∑ xt − s0 ) = 0  (2.7) 
+t=1
+
+μ t xt = 0 ⎫
+min ⎬  for t∈{1, 2,LT }  (2.8) 
+
+lt (xt − x ( pt , t ) ) = 0⎭
+
+Thus, we have 3T +1 equations for the 3T +1 unknowns that are: 
+
+x1,L , xT , λ, μ1,L, μT , l1,L , lT  
+
+A solution to the system of Equations 2.6–2.8 is admissible if λ ≥ 0,  μt ≥ 0,  
+lt ≥ 0  and if Inequalities 2.2–2.4 hold. 
+
+Note that, due to Relations 2.7 and 2.8: 
+T
+
+λ = 0  and/or ∑ xt = s0  
+t=1
+
+μ t = 0  and/or xt = 0  for t∈{1, 2,LT }  
+
+lt = 0  and/or  xt = x( pmin
+t , t)  for t∈{1, 2,LT }  
+
+
+
+2.2 Time-dated Items: a Deterministic Model       45 
+
+2.2.3 Solving the Problem: Example for a Given Price Function 
+
+We consider the case: 
+
+p ( xt , t ) = ( A− B x D
+t )  
+
+D + t
+
+where A, B and D are positive constants.  
+As a consequence:  
+
+x ( pt , t ) 1
+= ( A p D + t
+
+−
+B t )  
+
+D
+
+As we can see: 
+• The price is a decreasing function of t. 
+• The demand must remain less than A , otherwise the cost would become nega-
+
+B
+tive. 
+The problem to be solved is (see (2.1)–(2.4)): 
+
+T
+Maximize ∑( A− B xt ) x D
+
+t  
+t=1 D + t
+
+subject to: 
+
+T
+
+∑ xt ≤ s0  
+t=1
+
+xt ≥ 0 ⎫
+⎪
+⎬  f r t ∈{1, 2, , T
+
+x A o  L }  
+t ≤ B ⎪⎭
+
+The last constraints guarantee that prices remain greater than or equal to zero. 
+In this case, the Lagrangian is: 
+
+T
+L ( x D T
+
+1,L, xT , λ, μ1,L, μT , l1,L, lT ) =∑ ( A xt − B x 2
+t ) − λ (∑ xt − s0 )
+
+t=1 D + t t=1  
+T T
+
++∑μ t xt −∑ l ( x A
+t t − )
+
+t=1 t=1 B
+
+
+
+46       2 Dynamic Pricing Models 
+
+According to Relations 2.6–2.8, the system of equations to solve is: 
+
+( A B D
+− 2 xt ) − λ + μ 0  for t { , 2, , T }
+
+D t − l
+t t = ∈ 1 L  (2.9) 
+
++
+
+T
+λ (∑ xt − s0 ) = 0  (2.10) 
+
+t=1
+
+μt xt = 0  for t∈{1, 2,L, T } (2.11) 
+
+lt ( xt − A / B ) = 0  for t∈{1, 2,L, T } (2.12) 
+
+Whatever t∈{1, 2,L, T }, xt  is either equal to 0, or to A / B , or belongs to 
+(0, A / B )  (which represents the interval without its limits). This third option is 
+justified as follows.  
+
+If neither of the first two options holds, then μt = lt = 0  and Relation 2.9 be-
+comes: 
+
+( A− 2 B x ) D
+t − λ = 0  
+
+D + t
+
+Let us first assume that xt = A / B . In this case, μt = 0  and Equality 2.9 be-
+comes: 
+
+( A 2 A) D
+− = λ + l  
+
+D + t t
+
+The first member of this equality is negative, while the second member is 
+greater than or equal to 0 since both λ  and lt must be less than or equal to 0 for 
+the solution to be admissible. As a conclusion, xt  cannot be equal to A / B , and 
+therefore, see (2.12), lt =  0 whatever t. 
+
+Let us now assume that xt = 0 . In this case, and keeping in mind that lt = 0, 
+Equality 2.9 becomes: 
+
+A D
+−λ + μ 0 o  >
+
+D t t =  r λ D
+= A + μ 0  
+
++ D + t t
+
+T
+Thus, according to (2.10), ∑ xt = s0  
+
+t=1
+
+
+
+2.2 Time-dated Items: a Deterministic Model       47 
+
+Finally, assume that xt ∈ (0, A / B ) . In this case, μt = lt = 0  and 
+
+λ = ( A 2 B x D
+− t ) . 
+
+D + t
+As a consequence, xt ∈(0, A / 2 / B ] and x 1 ( A D + t
+
+t = − λ ) . 
+2B D
+
+We have to consider two cases: 
+1. If xt = A / 2 / B  then, according to Equations 2.9 and 2.10: 
+
+T
+λ = 0  and ∑ xt ≤ s0  (2.13) 
+
+t=1
+
+2. If xt ∈ (0, A / 2 / B ) , then, according to Equations 2.9 and 2.10: 
+
+T
+λ > 0  and ∑ xt = s0  (2.14) 
+
+t=1
+
+Let be Y = { t t∈{1,2,L,T }, xt > 0} and NY the number of elements of Y. 
+ 
+From (2.13) and (2.14) it appears that: 
+
+• If T × A / 2 / B ≤ s0 , then xt = A / 2 / B  for t∈{1, 2,L, T } is an admissible so-
+lution. 
+
+T
+• If NY × A / 2 / B ≥ s , then ∑ xt = s0 . Since x 1 +
+
+t ( A D t
+0 = − λ )  when 
+
+t=1 2B D
+T
+
+xt > 0 , equality ∑ xt = s0  becomes ∑⎧ 1 +
+⎨ ( A− λ D t ) ⎫⎬ = s
+
+t Y 2B D 0  and 
+t=1 ∈ ⎩ ⎭
+
+NY D A− 2 B D s
+λ = 0 . Finally: 
+
+NY D +∑ t
+t∈Y
+
+x 1 ( A NY D A − 2 B D s0 D + t
+t = − )  for t∈Y  (2.15) 
+
+2B NY D +∑ t D
+t∈Y
+
+We derive an algorithm from the above results. 
+
+
+
+48       2 Dynamic Pricing Models 
+
+Algorithm 2.1. 
+
+1. If T × A / 2 / B ≤ s0 , then xt = A / 2 / B  for t∈{1, 2,LT} , compute the criterion 
+T
+
+C* =∑ (A− Bxt ) x D
+t  and set x*
+
+D t = xt  for t∈{1, 2,LT } , otherwise set C* = 0 .  
+t=1 + t
+
+2. If T × A / 2 / B ≥ s0 , then for all sequences Y = [ y1, y2 ,L, yT ] , where yt = 0 or 1 : 
+ 2.1. Set xt = 0  if yt = 0  or compute xt using (2.15) if yt =1 . 
+ 2.2. If (xt < 0 or xt > A / 2 / B)  for at least one t ∈{1, 2,L, T} , then go to the next sequence 
+
+Y. Otherwise, compute C = ∑ (A− B x ) x D
+t t . 
+
+t y =1 D + t
+t
+
+ 2.3. If C > C* : 
+ 2.3.1. Set C* = C . 
+ 2.3.2. Set x*
+
+t = xt  for t ∈{1, 2,LT } . 
+3. The solution of the problem is {x* } *
+
+t t=1, 2,L, T  and C  contains the optimal value. 
+
+ 
+This algorithm consists of computing the value of the criterion for each of the 
+
+feasible solutions and keeping the solution with the greater value of the criterion. 
+Indeed, this approach can be applied only to problems of reasonable size since the 
+number of feasible solutions is upper bounded by 2T . 
+
+Numerical Illustrations 
+We present 3 examples. Demands and prices are rounded and T = 10. They are 
+listed in the increasing order of time. 
+
+Example 1 
+A = 200, B = 10 and D = 10 
+Initial inventory level: 150 
+Demands: 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 
+Prices (per item): 90.91, 83.33, 76.92, 71.43, 66.67, 62.5, 58.82, 55.56, 52.63, 50 
+Total demand: 100 
+Revenue: 6687.71 
+
+Example 2 
+A = 500, B = 5 and D = 10 
+Initial inventory level: 150 
+Demands: 25.56, 23.33, 21.11, 18.89, 16.67, 14.44, 12.22, 10.0, 7.78, 0 
+Prices (per item): 338.38, 319.44, 303.42, 289.68, 277.78, 267.36, 258.17, 250.0, 
+242.69, 0 
+Total demand: 150 
+
+
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic Model       49 
+
+Revenue: 44 013.1 
+
+Example 3 
+A = 500, B = 10 and D = 2 
+Initial inventory level: 200 
+Demands: 22.67, 22.56, 22.44, 22.33, 22.22, 22.11, 22.0, 21.89, 21.78, 0 
+Prices (per item): 260.32, 249.49, 239.61, 230.56, 222.22, 214.53, 207.41, 200.79, 
+194.64, 0 
+Total demand: 200 
+Revenue: 44 933.7 
+
+2.2.4 Remarks 
+
+Three remarks can be made concerning this model: 
+• The main difficulty consists in establishing the deterministic relationship be-
+
+tween the demand and the price per item. In fact, establishing such a relation-
+ship is a nightmare. Several approaches are usually used to reach this objective. 
+One of them is to carry out a survey among a large population, asking custom-
+ers the price they are prepared to pay for one item. Let n be the size of the 
+population and sp the number of customers who are prepared to pay p or more 
+for one item, then sp / n is the proportion of customers who will buy at cost p. 
+Then, evaluating at k the number of customers who demonstrate some interest 
+in the item, we can consider that the demand is k × sp / n  when the price is p. 
+Another approach is to design a “virtual shop” on the Internet and to play with 
+potential customers to extract the same information as before. This is particu-
+larly efficient for products sold via the Internet. Ebay and other auction sites 
+can often provide this initial function for price and demand surveying. 
+
+• In the model developed in this section, demands and prices are continuous. The 
+problem becomes much more complicated if demands are discrete. Linear in-
+terpolation is usually enough to provide a near-optimal solution. 
+
+• In this model, we also assumed that the value of one item equals zero after time 
+T. We express this situation by saying that there is no salvage value. 
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic 
+Model 
+
+In this model, we assume that there is no salvage value, i.e., that the value of an 
+item equals zero at time T. 
+
+
+
+50       2 Dynamic Pricing Models 
+
+We are in the case of imperfect competition, which means that the vendor has 
+the monopoly of the items. The monopoly could be the consequence of a specific-
+ity of the items that requires a very special know-how, a technological special fea-
+ture, a novelty or the existence of item differentiation that results in a very large 
+spectrum of similar items.  
+
+In the case of imperfect competition, customers respond to the price. 
+Furthermore, this model is risk-neutral, which means that the objective is only 
+
+to maximize the expected revenue at time T, without taking into account the risk 
+of poor performance. This kind of model applies when the number of problem in-
+stances is large enough to annihilate risk, which is a consequence of the “large 
+number” statistical rule. 
+
+These hypotheses are the same as those introduced in the previous model. The 
+differences will appear in the next subsection. 
+
+This approach is presented in detail in (Gallego and Van Ryzin, 1994). 
+
+2.3.1 Problem Considered 
+
+To make the explanation simple, consider that possible customers appear at ran-
+dom. Each customer buys an item, or not, depending on the price and the maxi-
+mum amount of money they are prepared to pay for it. 
+
+We assume that a Poisson process generates the arrival of the customers.1  
+Let δ  be an “infinitely small” increment of time t. The probability that a cus-
+
+tomer appears during the period [ t, t +δ )  is λδ , and at most one customer can 
+appear during this period. In this model, we assume that λ  is constant. In particu-
+lar, λ  depends neither on time nor on the number of unsold items. In other words, 
+the arrival process of customers is steady. 
+
+After arriving in the system, a customer may buy an item. As mentioned be-
+fore, this decision depends on the price of the item and the amount of money they 
+are prepared to pay for it. We denote by f ( p )  the density of probability reflect-
+ing the fact that a customer is prepared to pay p for one unit of product. The fol-
+lowing characteristics hold:  
+
+                                                          
+1 In this study, a Poisson process of parameter λ  generates the arrival of one potential customer dur-
+ing an “infinitely small” period δ  with the probability λ δ  and does not generate any customer with 
+the probability1−λ δ . In this process, the probability of the arrival of more than one potential cus-
+tomer is o(δ ) , which is practically equivalent to zero. Another way to express the Poisson process is to 
+say that the probability that k potential customers arrive during a period [0, t]  is: 
+
+λ k
+P ( t) ( t)
+
+k = exp −λ . 
+k !
+
+
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic Model       51 
+
+• The density f ( p )  is a decreasing function of p, which means that the more 
+expensive the product, the smaller the probability that a customer is prepared to 
+pay this amount of money. 
+
+• If the price of an item is p, then any customer who is prepared to pay p1 ≥ p 
+will buy it. Thus, the probability of buying an item when the price is p is: 
+
++∞ p
+
+P ( p ) = ∫ f (u )du =1− ∫ f (u )du =1− F ( p )  
+u= p u=0
+
+where F ( p )  is the distribution function of the price.  
+This probability tends to 0 when p tends to infinity and to 1 when p tends to 0. 
+A set of n items are available at time 0. 
+We define the value v ( k, t ) , k ∈[0, n ]  and t∈[0, T ] , as the maximum ex-
+
+pected revenue we can obtain by time T from k items available at time t. We as-
+sume that v ( k, t )  is continuously differentiable with regard to t. Thus, v (n, 0 )  is 
+the solution to the problem. 
+
+Indeed, v (0,t ) = 0 , ∀t∈[0, T ]  and v ( k, T ) = 0 , ∀k ∈[0, n ] . In other words, 
+if the inventory is empty at time t, we cannot expect any further revenue. Also, if 
+the inventory is not empty at time T, it is no longer possible to sell the items that 
+are in inventory. 
+
+Assume that k is the number of items available at time t. Three cases should be 
+considered when the system evolves from time t to time t + δ : 
+• No customer appears during the period [ t, t +δ ) . The probability of this non-
+
+event is 1−λ δ  and the value associated with the state ( k, t +δ )  at time t +δ  
+is v ( k, t +δ ) . 
+
+• A customer appears during the period [ t, t + δ )  (probability λ δ ), but does 
+not buy anything (probability F ( p )). Finally, the probability associated with 
+this case is λ δ F ( p )  and the value associated with the system is still 
+v ( k, t +δ )  at time t + δ . 
+
+• A customer appears during the period [ t, t +δ )  (probability λ δ ) and buys 
+one item (probability 1− F ( p ) ). The probability associated with this case is 
+λ δ [1− F ( p ) ] and the value associated with the system at time t + δ  is 
+v ( k −1, t +δ )+ p − c . In this expression, p is the price of one item and c is the 
+marginal cost when selling one item (cost to invoice, packaging, transportation, 
+for instance). The cost c depends neither on the inventory level nor on the time. 
+It is assumed to be less than p. 
+Figure 2.1 represents the evolution of the number of items during the elemen-
+
+tary period [ t, t +δ )  if k items are available at time t. 
+
+
+
+52       2 Dynamic Pricing Models 
+
+Inventory level 
+Pr =1− λ δ [1− F (p)]
+
+k 
+v (k,t) v (k,t+δ) 
+
+Pr = λ δ [1− F (p)] p–c 
+
+k–1 
+v (k–1,t+δ) 
+
+t t+δ Time
+ 
+
+Figure 2.1 Evolution of the number of items 
+
+Let p* be the optimal cost of one item at time t when the inventory level is k, 
+and v ( k, t )  the maximum expected revenue for the state ( k, t )  of the system. At 
+time t + δ  the maximum expected revenue becomes either v ( k, t +δ )  with the 
+probability 1− λ δ [1− F ( p * ) ] or v ( k −1, t +δ )  with the probability 
+λ δ [1− F ( p * ) ], but, in the later case, some revenue has been taken by the re-
+tailer when the item was sold and this amount is p*–c. In terms of flow, we can 
+consider that the flow p*–c of money exited the system during the elementary pe-
+riod [ t, t +δ ) . Thus, writing the balance of the maximum expected revenues, we 
+obtain: 
+
+v ( k, t ) = [ 1− λ δ [ 1− F ( p * ) ] ] v ( k, t + δ )
+ 
+
++ λ δ [ 1− F ( p * ) ] [ v ( k −1, t + δ )+ p *−c ]
+
+As a consequence:  
+
+( ) ⎧ ( 1− λ δ ) v ( k, t +δ ) + λ δ F ( p ) v ( k, t +δ ) ⎫
+v k, t = Max ⎨ (  
+
+p≥0 ⎩ + λ δ [1− F p ) ][ v ( k −1, t +δ )+ p − c ] ⎬
+⎭
+
+This equality can be rewritten as: 
+
+( ) ⎧ v ( k, t +δ )− λ δ [1− F ( p ) ]v ( k, t +δ ) ⎫
+v k, t = Max ⎨  
+
+p≥0 ⎩ + λ δ [1− F ( p ) ][ v ( k −1, t +δ )+ p − c]⎬⎭
+This equality leads to: 
+
+v ( k, t +δ )− v ( k, t ) ⎧ − [1− F ( p ) ]v ( k, t +δ ) ⎫
+− = λ Max  
+
+δ ⎨
+p≥0 ⎩ + [1− F ( p ) ][ v ( k −1, t +δ )+ p − c ] ⎬⎭
+
+
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic Model       53 
+
+If δ  tends to 0, the previous equality becomes: 
+
+v '
+t ( k , t ) =  
+
+− λ Min { [1− F ( p ) ]v ( k , t )− [1− F ( p ) ][ v ( k −1, t )+ p − c ] } (2.16) 
+p≥0
+
+The solution of the problem (i.e., maximizing the revenue) consists of finding, 
+for each pair ( k, t ) , the price p *  that minimizes the second member of Equal-
+ity 2.16, and then solving the differential equation (2.16). Thus, two values will be 
+associated to the pair ( k, t ) : 
+
+• The price p * ( k, t )  that should be assigned to a unit of product at time t if the 
+inventory level is k. 
+
+• The maximum expected revenue on period [ t, T ]  if the inventory level is k at 
+time t. 
+Unfortunately, it is impossible to find an analytic solution for a general func-
+
+tion F ( p ) . From this point onwards, we assume that: 
+
+F ( p ) = 1− e −α p  (2.17) 
+
+where α > 0 . 
+
+2.3.2 Solution to the Problem 
+
+According to Relation 2.17, Equation 2.16 becomes: 
+
+v ' ( k, t ) = −λ Min {e−α p
+t ( v ( k, t )− v ( k −1, t )− p + c ) } (2.18) 
+
+p≥0
+
+Since e−α p > 0 , the minimum value of the second member of (2.18) is ob-
+tained for the value p * ( k , t )  of p that makes its derivative with regard to p  
+equal to 0. Thus, p * ( k, t )  is the solution of: 
+
+e−α p [ −α v ( k, t )+α v ( k −1, t )+α p −α c −1 ] = 0  
+
+
+
+54       2 Dynamic Pricing Models 
+
+Finally: 
+
+p * ( k, t ) = v ( k, t )− v ( k −1, t ) c 1
++ +  (2.19) 
+
+α
+
+By replacing p by p * ( k, t )  in Equation 2.18 we obtain: 
+
+v ' ( , ) λ
+= − e−α [ v ( k , t )−v ( k−1, t )+c+1/α ]
+
+t k t  (2.20) 
+α
+
+Equation 2.20 holds for k > 1. 
+As we can see, the derivative of v with respect to t is negative. This means that 
+
+the maximum expected revenue decreases when the time increases, whatever the 
+inventory level. In other words, the closer the deadline, the smaller the maximum 
+expected revenue for any given inventory level. 
+
+For k =  0, the differential equation is useless since we know that: 
+
+v ( 0, t ) = 0 ∀t∈[ 0, T ]  
+
+For k = 1, the differential equation (2.20) is rewritten as: 
+
+v ' ( 1, t ) λ
+= − e−α [ v ( 1, t )+c+1/α ]
+
+t  
+α
+
+The solution to this differential equation is: 
+
+( ) ⎪⎧ k j − j ( 1+ c )
+v k, t 1 ln ∑ λ e α ( T − t ) j
+
+= ⎪⎫
+⎨ ⎬  (2.21) 
+
+α ⎪⎩ j=0 j ! ⎪⎭
+
+Let set: 
+
+k λ j − j ( 1+α c )
+A k t T t j
+( , ) ∑ e ( − )
+
+=  
+j=0 j !
+
+With this definition, Relation 2.21 can be rewritten as: 
+
+v ( k, t ) 1
+= ln [ A ( k, t ) ] 
+α
+
+and Relation 2.19 becomes: 
+
+
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic Model       55 
+
+( ) ⎡ ( ) ⎤
+p * k, t 1 ln A k, t 1
+
+= ⎢ + c +  
+α ⎣ A ( k −1, t ) ⎥⎦ α
+
+or: 
+
+1+α c
+p * ( k, t ) 1 ⎡ A ( k t )⎤
+
+= ln e ,  (2.22) 
+α ⎢
+
+⎣ A ( k −1, t ) ⎥
+⎦
+
+Finally, for any pair ( k, t ) , we can compute A ( k, t )  and A ( k −1, t ) , and 
+thus we can compute the optimal price associated to this pair by applying Relation 
+2.22. Note that, when we refer to the state of the system, we refer to the pair 
+( k, t ) . 
+
+In this model, the system change over time according to a frozen control char-
+acterized by parameters α  that provides the probability for a customer to buy an 
+item, and λ  that defines the probability for a customer to appear in the system 
+during an elementary period. Thus, the behavior of customers, as well as their de-
+cision-making process, is frozen as soon as λ  and α  are selected. As a conse-
+quence, this model is not very useful in practice, but it is a good example of help-
+ing the reader to understand the objective of dynamic pricing that consists in 
+adjusting dynamically the price of the items to the state of the system.  
+
+Example 
+We illustrate the above presentation using an example defined by the following 
+parameters: 
+• α = 0.8 . Remember that the greater α , the faster the probability of buying a 
+
+product decreases with the cost. 
+• λ =1.5 . Remember that the greater λ , the greater the probability that a cus-
+
+tomer enters the system. 
+• The initial level of the inventory is 10. 
+• T=20. 
+
+The probability of reaching the inventory level k at time t is represented in Fig-
+ure 2.2. At time 0, the inventory level is equal to 10 with probability 1. When time 
+increases, the set of possible inventory levels with significant probabilities in-
+creases and the mean value of the inventory level decreases. 
+
+Figure 2.3 represents the optimal price of a product according to the time and 
+the inventory level. For a given inventory level, price decreases with time. Simi-
+larly, at a given time, the price increases when the inventory level decreases.  
+
+
+
+56       2 Dynamic Pricing Models 
+
+1
+0.9
+
+0.8
+
+0.7
+
+0.6
+0.5 Probability
+0.4
+0.3
+
+0.2
+
+Time 0.1
+0
+
+0 2 4 6 8 10
+Inventory 
+
+level
+ 
+
+Figure 2.2 Probability versus time and inventory level 
+
+4.5
+
+4
+
+3.5
+
+Price 3
+
+2.5
+
+2
+
+1.5
+
+Time
+Inventory level
+
+ 
+Figure 2.3 Optimal price versus time and inventory level 
+
+2.3.3 Probability for the Number of Items at a Given Point in Time 
+
+Let n be the number of items available at time 0. We denote by r ( k, t )  the prob-
+ability that k items are still available at time t. 
+
+1
+5
+
+1 9
+3 13
+
+5 17
+
+7
+
+9
+
+0
+
+4
+
+8
+12
+
+16
+
+
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic Model       57 
+
+Indeed, r ( n, 0 ) =1  since the initial state ( n, 0 )  is given and r ( k, 0 ) = 0  
+whatever the number k of items, k∈{0,1, ..., n −1 } . 
+
+Result 1 
+The probability to have k unsold items at time t is: 
+
+( ) [ e−( 1+α c ) n k
+r k, t λ t ] − A ( k, t )
+
+= (  (
+n − k )! A ( n, 0 ) 2.23) 
+
+Proof 
+Let dt  be an elementary increment of t. To have k items at time t + dt  we should 
+be in one of the following cases: 
+• The number of items at time t was k + 1 (this case holds only if k < n), a cus-
+
+tomer appeared on the time interval [ t, t + dt )  (probability λ dt ) and this cus-
+tomer bought an item ( probability e−α p* ( k+1, t ) ). 
+
+• The number of items at time t was k and either no customer appeared on the 
+time interval [ t, t + dt )  (probability 1− λ dt ) or one customer appeared but 
+he/she didn’t buy anything (probability λ dt (1− e−α p* ( k , t ) )). 
+As a consequence, we obtain the following relation:  
+
+r ( k, t + dt ) = r ( k +1, t ) λ dt e−α p* ( k+1, t ) + r ( k, t ) [ 1− λ dt e−α p* ( k , t ) ]  (2.24) 
+
+when k < n, and 
+
+r ( n, t + dt ) = r ( n, t )[ 1− λ dt e−α p* ( n, t ) ]  (2.25) 
+
+Let us first consider Relation 2.25. It leads to: 
+
+r ' ( n, t ) −λ r( n, t ) e−α p* ( n, t )
+t =  
+
+Using Relation 2.22, we obtain: 
+
+ln r ( n, t ) = ln A ( n, t )+W , where W is constant. 
+
+Since r(n, 0) =1 , the previous relation leads to: 
+
+W = − ln A ( n, 0 )  
+
+
+
+58       2 Dynamic Pricing Models 
+
+Finally: 
+
+r ( n, t ) A ( n, t )
+= ( )  (2.26) 
+
+A n, 0
+
+Thus, Relation 2.23 holds for k = n. 
+From Relation 2.24 and using (2.22), we derive: 
+
+r '
+t ( k, t ) =  
+
+e−( 1+α c ) A ( k, t ) e−( 1+α c )
+r ( k 1 t ) ) λ A ( k 1, t )
+
++ , λ  (2.27) 
+A ( k +1, t ) − r ( k, t −
+
+A ( k, t )
+
+If we write Equation 2.27 for k = n–1, we can use Equation 2.26 to obtain a dif-
+ferential equation in r ( n −1, t ) . Solving this equation leads to: 
+
+λ −(1+α c )
+r ( n 1, t ) e t A (n −1, t )
+
+− =  
+A (n, 0 )
+
+In turn, this result used with Relation 2.27 leads to a differential equation in 
+r ( n − 2, t ) . As soon as the general form of the solution is recognized, a recursion 
+is applied to verify the result. Q.E.D. 
+
+ 
+Result 2 concerns the expected number of items sold at the end of period t. 
+ 
+
+Result 2 
+The expected number of items sold by time t is 
+
+E = λ e−(1+α c )
+t t A ( n −1, 0 ) / A ( n, 0 )  
+
+Proof 
+Taking into account Result 1: 
+
+n n −( + c ) n−k
+Et =∑(n − k ) r ( k, t ) ∑( ) [ λ e 1 α ] ( , )
+
+= n − k t A k t  
+k=0 k=0 ( n − k )! A ( n, 0 )
+
+This relation can be rewritten as: 
+
+n−1 −( 1+α c ) n−k−1
+E = λ e−( 1+α c ) t ∑ [ λ e t ] A ( k, t )
+
+t  
+k=0 (n − k −1 )! A ( n, 0 )
+
+
+
+2.3 Dynamic Pricing for Time-dated Products: a Stochastic Model       59 
+
+e ( α )
+E λ − 1+ c t A (n −1, 0 ) n−1 [ λ e−( 1+α c ) t ] n−k−1
+
+∑ A ( k, t )
+t = (  
+
+A n, 0 ) k=0 (n − k −1 )! A ( n −1, 0 )
+
+The sum in the second member of the equality is equal to 1 since the elements 
+of this sum are the probability r ( k, t )  assuming that the initial number of items is 
+n–1.  
+
+This completes the proof. Q.E.D. 
+
+Example 
+As we can see in Figure 2.4: 
+• The number of items sold by time T is an increasing function of λ  when α  is 
+
+fixed; in other words, the lower the average probability that a customer arrives 
+in the system, the lower the number of items sold at time T. 
+
+• The number of products sold by time T is a decreasing function of α  when λ  
+is fixed; in other words, the higher the average price of a product, the lower the 
+number of items sold by time T. 
+
+9
+8
+7
+6
+
+Number of 5
+products sold 4
+
+3
+2
+1
+0
+
+Alpha Lambda
+
+ 
+Figure 2.4 Number of products sold by time T with regards to λ  (lambda) and α (alpha) 
+
+2.3.4 Remarks 
+
+In the model presented in this section, it is assumed that the buying activity pro-
+ceeds in two steps: first, a buyer enters the system with a given probability that 
+
+0.2
+0.6
+
+1
+
+1.4
+
+1.8
+0.2
+
+0.6
+1
+1.4
+
+1.8
+
+
+
+60       2 Dynamic Pricing Models 
+
+depends on parameter α  and, second, he/she decides to buy an item or not, de-
+pending on the maximum amount of money he/she is prepared to pay for it, and 
+this buying probability depends upon a parameter denoted by λ . Furthermore, the 
+value of one item is equal to zero at time T, the horizon of the problem; in other 
+words, there is no salvage value. 
+
+The biggest drawback with this model is related to its following characteristics: 
+1. We have to compute the maximum value of 
+
+[ 1− F ( p ) ] [ v ( k, t )− v ( k −1, t )− p + c ]  with respect to p. Let p* be the 
+value of p that leads to this maximum value. The problem is that, if we want to 
+solve the differential equation (2.18) analytically, we must be able to express p* 
+as a function of v. 
+
+2. We then have to be able to solve the differential equation in which p* is re-
+placed by its function of v. 
+These two conditions make the computation of an analytical solution usually 
+
+impossible, mainly if the problem at hand is a real-life problem, especially if the 
+probability density is not exponential. 
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values 
+
+The difference from the previous model lies not only in the existence of salvage 
+values, but also in the fact that there exists a one-to-one relationship between the 
+demand intensity, denoted by λ , and the price for one item, denoted by p. Thus, 
+the two-stage buying process that was the basis of the previous model vanishes. 
+
+We assume that the demand follows a Poisson process of parameter λ . We 
+also assume that only a finite number of prices can be chosen by the retailer and 
+that each price is associated with one demand intensity. 
+
+Some additional assumptions will be made. They will be presented in detail in 
+the next section. 
+
+2.4.1 Problem Studied 
+
+The period available to sell the items is [ 0, T ]  and the number of items available 
+at time 0 is n. We denote by P = { p1, p2 , ..., pN , p∞ }  the set of prices that can be 
+chosen by the retailer and by Λ = {λ1, λ2 ,..., λN , λ∞ } the corresponding demand 
+intensities. 
+
+Establishing the relationship between the elements of P and the elements of Λ  
+is not an easy task. We assume that this task has been performed at this point of 
+the process. 
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       61 
+
+The available prices are arranged in their decreasing order, i.e., 
+p1 > p2 > ... > pN > p∞ , and thus λ1 < λ2 < ... < λN < λ∞  since the greater the 
+
+price, the lower the demand intensity: the price is a decreasing function of the de-
+mand intensity. 
+
+As mentioned before, salvage values are included in the model, which means 
+that it is still possible to sell the unsold items in a secondary market after time T. 
+We denote by w (r, T )  the salvage value of r items unsold at the deadline T. In 
+other words, w (r, T )  is the selling price in the second market of the r unsold 
+items at time T. The salvage value w (r, T )  is assumed to be non-decreasing and 
+concave in r. This means that: 
+1. The salvage value of the remaining items increases with the number of items, 
+
+which is realistic. 
+2. The average price of one item is a non-increasing function of the number of 
+
+items. It may also happen that the price per unit does not depend upon the 
+number of remaining items: it is the borderline case. Note that this second hy-
+pothesis is quite common. 
+We denote by p ( r, t )  the price of one item at time t if the inventory level is r. 
+We also assume that: 
+
+1 w ( n, T )≤ w (1, T ) ≤ p ( n, T )  
+n
+
+where p ( n, T )  is the price of one item when the inventory level is still full just 
+before the end of the selling period. 
+
+Indeed, according to the hypotheses made before, p ( n, T )≤ p ( k, t )  for 
+k ∈{1, 2, ..., n }  and t∈[ 0, T ) . In other words, selling one item for its salvage 
+value is always worse than selling it before time T, whatever the inventory level. 
+
+We first consider the case when the price of one item depends on the inventory 
+level only. 
+
+2.4.2 Price as a Function of Inventory Levels: General Case 
+
+2.4.2.1 Model 
+
+In practice, it is rare to assign a different price for each inventory level, except if 
+the items under consideration are very expensive (cars, for instance). This case 
+will be considered in Section 2.4.3. For the time being, we assume that the same 
+
+
+
+62       2 Dynamic Pricing Models 
+
+price applies when the inventory level lies between two given limits. In the fol-
+lowing, ki is the rank of the i-th item sold. 
+
+We would like to recall the following convention: writing x∈( a, b ]  means 
+that a does not belong to the interval (i.e., x cannot take the value a) while b does 
+(i.e., x can take the value b). Also, to simplify the notations, we introduce 
+
+i
+Ni =∑n j  for i = 1, 2, ..., s , where s  is the number of levels, N0 = 0, and n j  is 
+
+j=1
+
+the number of items sold at price p j . 
+If n is the inventory level at time 0, we assume that: 
+
+• Price p1  applies to the k1-th item sold when k1 ∈[ N0 , N1 ) . 
+• Price p2  applies to the k2-th item sold when k2 ∈[ N1, N2 ) . 
+… 
+• Price pi  applies to the ki-th item sold when ki ∈[ Ni−1, Ni ) . 
+… 
+• Price ps  applies to the ks-th item sold when ks ∈[ Ns−1, Ns ) . 
+
+Indeed,  
+
+s
+n =∑n j = Ns  
+
+j=1
+
+At this point of the discussion, the goal does not consist in finding the values of 
+parameters ni that optimize the mean value of the revenue. We just want to pro-
+pose a tool that provides the mean value of the revenue when the values of the pa-
+rameters are given. 
+
+Let ki ∈{ Ni−1 +1, ..., Ni } and let Pr ( ki , [ a, b ] r )  be the probability that ki 
+items are sold during period [ a, b ]  if the inventory level is r at time a. The for-
+mulation of the probability has been slightly modified to precisely match the ini-
+tial value of the inventory, which will be useful in the remainder of the section to 
+avoid confusion. When the initial inventory is n, this information is ignored and 
+we use the previous notation.  
+
+In Figure 2.5, we provide the structure that underlies the computation of 
+Pr ( ki , [ 0, T ] ).  
+
+We first write that the probability that ki  items are sold during period [ 0, T ]  
+is the integral on [ 0, T ]  with regard to t1 of the product of the two following fac-
+tors (Bayer’s theorem): 
+• The probability that n1 = N1  items are sold in period ( 0, t1] , the last item being 
+
+sold at time t1. This probability is:  
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       63 
+
+n1 λ1  N1 N2 
+n2 λ2  
+
+Ni-2 
+k M
+
+i Ni-1
+M Ni
+M
+
+Ns-1 
+ni-1 λi−1 Ns 
+
+ni k λ
+i i
+
+M
+M
+M
+
+ns λs
+  
+
+Figure 2.5 Structure used to compute the probability to sell ki  items in [ 0, T ] 
+
+( λ ) n1−1
+1 t1
+
+( ) exp (−λ t t
+1 ! 1 1 ) λ1 d  
+
+n1 −
+1
+
+• The probability that ki − N1  items are sold during period ( t1, T ] , knowing that 
+the inventory level at time t1 is n − N1 . This probability is: 
+
+Pr { ki − N1, ( t1, T ] n − N1 }  
+
+Finally, Pr ( ki , [ 0, T ] )  is expressed as: 
+
+T
+
+( [ ] ) ( λ ) n1−1
+Pr k , 0, T 1 t1
+
+i = ∫ ( ) exp (− λ1 t1 ) λ1 Pr ( ki − N1, ( t T n − N t
+t n −1 1, ] 1 )d! 1  
+1=0 1
+
+We now compute Pr { ki − N1, ( t1, T ] n − N1 }  as the integral on the interval 
+( t1, T ]  with respect to t2 of the product of the following two factors: 
+
+1. The probability that n2 items are sold on period ( t1, t2 ] , the last item being 
+sold at time t2. This probability is:  
+
+[ λ ( t ) 1
+2 2 − t1 ] n2−
+
+( ) exp [ − λ t t t
+n 1 ! 2 ( 2 − 1 ) ] λ2 d 2  
+
+2 −
+
+2. The probability that ki − N2  items are sold during period ( t2 , T ] , knowing 
+that the inventory level at time t2 is n − N2 . This probability is: 
+
+
+
+64       2 Dynamic Pricing Models 
+
+Pr ( ki − N2 , ( t2 , T ] n− N2 )  
+Thus, 
+
+Pr ( ki − N1, ( t1, T ] n − N1 )
+T [ λ2 ( t2 − t ) ] n2−1  
+
+= ∫ 1
+( ) exp [− λ2 ( t2 − t1 ) ] λ2 Pr ( ki − N2 , ( t2 , T ] n − N2 )dt2
+
+t =t n2 −1 !
+2 1
+
+We further extend this approach to the next lower layers. We obtain: 
+
+Pr ( ki − Ni−3 , ( ti−3 , T ] n − Ni−3 )
+T ⎧ [ λ ( n
+
+i 2 ti − t ) ] i−2−1
+= ∫ ⎨ − −2 i−3
+
+( ) exp [− λ
+1 ! i−2 ( ti−2 − ti−3 ) ] λi−2  
+
+t −2
+−2= t −3 ⎩ ni −
+
+i i
+
+Pr ( ki − Ni−2 , ( ti−2 , T ] n − Ni−2 ) }dti−2
+
+Pr ( ki − Ni−2 , ( ti−2 , T ] n − Ni−2 )
+T ⎧ [ λ ( t − t ) ] ni−1−1
+
+= ∫ ⎨ i−1 i−1 i−2
+( ) exp [− λ − ( − − )
+
+−1 ! i 1 ti 1 ti−2 ]λi−1  
+t − = t ⎩ ni−1
+i 1 i−2
+
+Pr ( ki − Ni−1, ( ti−1, T ] n − Ni−1 ) }dti−1
+
+The last echelon of the formulation is slightly different from the previous ones: 
+
+Pr ( ki − Ni−1, ( ti−1, T ] n − Ni−1 )
+T [ λ ( t − t ) ]ki−Ni−1−1  
+
+= ∫ i i i−1
+( ) exp [− λi ( ti − ti−1 ) ]λi Pr ( 0, ( ti , T ] n − ki )dt
+k N i
+
+t t i − i 1 −= − 1 !
+i i−1
+
+and: 
+
+Pr ( 0, ( ti , T ] n − ki )= exp [−λi ( T − ti ) ]  
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       65 
+
+This sequence of equalities can be rewritten as a unique relation: 
+
+i−1 i−
+Pr ( k , [ 0, T ] ) ( n ) 1
+
+k N ⎛ 1 ⎞
+∏ 1
+
+1
+i = λ j λ i− i− ⎜ ⎟
+
+j i ∏ ⎜ ⎟
+j=1 j=1 ⎝ ( n j −1 ) !⎠ ( ki − Ni −1 )!
+
+T T T i−1
+
+∫ ∫ ∫ {∏ ( ( t − t n j−1
+L t − t ki−Ni 1−1
+
+j j−1 ) )( i i−1 ) −  (2.28) 
+t1=0 t =t t 1
+
+2 1 i=t j=
+i−1
+
+i
+
+∏( exp [ − λ j ( t j − t j−1 ) ] )exp [− λi ( T − ti ) ]}dti dti−1 L dt1
+j=1
+
+This relation holds for ki = 1, 2, …, n–1. 
+The probability that any item is sold by horizon T is: 
+
+Pr ( 0, [ 0, T ] ) = exp ( − λ1 T )  
+
+Furthermore, the probability that all the items are sold at time T is: 
+
+n−1
+Pr ( n, [ 0, T ] ) = 1−∑ Pr ( k, [ 0, T ] )  
+
+k=0
+
+Assuming that the probabilities are known, the mean value of the revenue is: 
+
+n
+v ( n, T ) = ∑ { Pr ( k, [ 0, T ] ) k [ p ( k )+ w ( n − k, T ) ] }  (2.29) 
+
+k=0
+
+where p ( k ) = pi  if k ∈{ Ni−1 +1, ..., Ni } . 
+
+2.4.2.2 Computation of the Mean Value of the Revenue 
+
+An analytical expression of the integrals of the second member in Relation 2.28 is 
+possible only for very small values of parameters i and ni since the complexity of 
+the solution increases exponentially. This is why a numerical approach is neces-
+sary.  
+
+We chose the Monte-Carlo approach. In order to simplify the notations, we de-
+note by qk  the probability Pr ( k, [ 0, T ] )  and by pi  the cost of one item if the 
+inventory level k belongs to { Ni−1 +1, ..., Ni }. Others notations are those intro-
+duced in the previous subsection. 
+
+ 
+
+
+
+66       2 Dynamic Pricing Models 
+
+Algorithm 2.2. 
+
+1. Compute q0 = exp ( − λ1 T ) . 
+2. For k =1 to n −1  do: 
+
+ 2.1. Compute i such that Ni−1 < k ≤ Ni . 
+ 2.2. If i >1  set K j = n j  for j =1, ..., i −1 . 
+ 2.3. Ki = k − Ni−1 . 
+ 2.4. u = 1. 
+ 2.5. For j = 1, ..., i  do u = u λ K j
+
+j . 
+i−1
+
+ At this point, u contains the term ∏ ⎜⎛ λ n j ⎟⎞ λ ki −Ni−1  of Formulae (2.28). 
+⎝ j ⎠ i
+
+j=1
+
+ The Monte-Carlo method starts below. 
+ 2.6. Set qk = 0. 
+ 2.7. For Mc = 1 to M do: 
+ M is the number of iterations (around 10 000). 
+  2.7.1. Set t0 = 0. 
+  2.7.2. For j =1, ..., i  generate tj at random on [ t j−1, T ] . 
+  2.7.3. Set w = 1, s = 0, z = 1. 
+  2.7.4. For j = 1, ..., i  do:  
+
+( t − t )K j−1
+   2.7.4.1. Compute v = j j−1 . 
+
+(K j −1 ) !
+   2.7.4.2. Compute v = v (T − t j−1 ) . 
+   2.7.4.3. Compute w = w v . 
+   2.7.4.4. If ( j < i) , then compute z = z exp [ − λ j ( t j − t j−1 ) ] . 
+   2.7.4.5. If [( j = i )  and ( k < Ni ) ]  do:  
+    2.7.4.5.1. Compute z = z exp [ λ j t j−1 ] . 
+    2.7.4.5.2. If ( Mc =1 ) , then compute u = u exp [ − λ j T ] . 
+   2.7.4.6. If [( j = i )  and ( k = Ni ) ]  do: 
+    2.7.4.6.1. Compute z = z exp [ − λ j ( t j − t j−1 )+ λ j+1 t j ] . 
+    2.7.4.6.2. If ( Mc = 1 ) , then compute u = u exp [ − λ j+1 T ] . 
+  2.7.5. End of loop j . 
+  2.7.6. Compute w = w z . 
+  2.7.7. Compute qk = qk + w / M . 
+ 2.8. End of loop Mc. 
+ 2.9. Compute qk = qk u . 
+
+3. End of loop k. 
+
+Computation of qn. 
+
+4. Set u = 0 . 
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       67 
+
+5. For k = 0, ..., n −1  do u = u + qk . 
+6. Compute qn =1− u . 
+
+Computation of the mean value of the revenue denoted by Ct. 
+
+7. Set Ct = 0. 
+8. For k = 0 to n  do: 
+
+ 8.1. Set cc = 0 . 
+ 8.2. Compute i such that Ni−1 < k ≤ Ni . 
+ 8.3. If i >1  do cc = cc+ p j n j  for j =1, ..., i −1 . 
+ 8.4. Compute cc = cc + ( k − Ni−1 ) pi . 
+ 8.5. Compute Ct = Ct + qk [ cc +w ( n − k, T ) ] . 
+
+9. End of loop k. 
+
+2.4.2.3 Improvement of the Solution 
+
+We denote by ni , i =1, 2,L, s  the initial sizes of the layers, from the upper to the 
+lower one, and by λi  (respectively, pi ) the corresponding demand intensities (re-
+spectively, prices). Remember that λ1 < λ2 <L< λs  and p1 > p2 >L > ps . 
+
+Since a numerical approach has been used to evaluate the probabilities of the 
+states of the system at time T and the mean value of the revenue knowing the lay-
+ers, we can also use a numerical approach to reach the layers that maximize the 
+mean value of the revenue. We chose a simulated annealing algorithm to improve 
+a given solution. This method is an iterative approach and some layers may be-
+come empty (and thus disappear) during the process. This requires some addi-
+tional notations. 
+
+We denote by r0 the number of layers, by n0
+i  the size of the i-th layer and by 
+
+λ0
+i  (respectively, p0
+
+i ) the corresponding demand intensities (respectively, prices) 
+for i =1, 2,L, r 0  at the beginning of an iteration of the simulated annealing algo-
+rithm or the initial stage. Indeed, r 0 ≤ s . At the beginning of the first iteration, 
+r 0 = s , n0
+
+i = ni , λ
+0
+i = λ  and p0
+
+i i = pi  for i =1, 2,L, s . 
+We denote by r1 the number of layers at the end of the first iteration, by n1
+
+i  the 
+size of the i-th layer, and by λ1
+
+i  (respectively, p1
+i ) the corresponding demand in-
+
+tensities (respectively, prices) for i =1, 2,L, r1 . Indeed, r1 ≤ s . Furthermore, the 
+corresponding mean value of the revenue is Copt1.  
+
+
+
+68       2 Dynamic Pricing Models 
+
+TT 0 1 0 2 0 3 0 0 4 
+
+λ1  λ2  λ3  λ4 λ5 λ6 λ7 λ8 λ9
+
+λ*
+1  λ* *
+
+2  λ *
+3  λ4
+
+r1=4 
+
+r0= s= 9  
+Figure 2.6 Links between the second and the initial iteration 
+
+We introduce a vector TT to link the initial demand intensities (and thus the 
+initial price), with the current demand intensities and prices. This linkage is illus-
+trated in Figure 2.6. 
+
+Algorithm 2.3 describes the simulated annealing mechanism that we apply to 
+our problem. Note: Algorithm 2.3 contains Algorithm 2.2. 
+
+ 
+Algorithm 2.3. 
+
+1. Introduce s, n, λi , pi  for i =1, 2,L, s  and the salvage costs w ( k, T )  for k =1, 2,L, n.  
+s
+
+2. Generate at random ni  for i =1, 2,L, s  such that ∑ni = n , the value generated being inte-
+i=1
+
+ger and positive. 
+ The first two steps of the algorithm provide the initial data. 
+3. Introduce KK. 
+
+KK is the number of iterations that will be made. For instance, we may assign the value 2000 
+or 3000 to this variable.  
+
+4. Set r 0 = s, λ0 0 0
+i = λi , pi = pi and ni = ni  for i =1, 2,L, s .  
+
+ This set of values represents the initial solution that is called S0. 
+5. Compute the mean value of the revenue corresponding to solution S0. We denote this value 
+
+Copt0. 
+ This is obtained by applying Algorithm 2.2. 
+6. We set S* ≡ S 0  and Copt* = Copt 0 . 
+
+For each iteration, S* contains the best solution and Copt* the greatest mean value of the 
+revenue obtained since the beginning of the algorithm. 
+
+ The simulated annealing process starts at this point. 
+7. For kkt = 1 to KK do: 
+
+ 7.1. For i = 1 to s set TTi = 0. 
+ 7.2. Set i = 1 and j = 1. 
+ 7.3. While ( i ≤ r 0 )   
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       69 
+
+  7.3.1. If ( λ0
+i = λi )  do: 
+
+   7.3.1.2. Set TT j = i.  
+   7.3.1.3. Set i = i +1.  
+   7.3.1.4. Set j = j +1.  
+  7.3.2. If ( λ0
+
+i ≠ λi )  do: j = j +1.   
+The instructions of Stage 7 lead to vector TT. 
+In the following steps, we modify the layers. 
+
+ 7.4. Generate the integer i at random on {1, 2,L, r0 }. 
+ 7.5. Generate the integer j at random on {1, 2,L, s } . 
+ 7.6. If ( TT j ≠ 0 )  do: 
+
+ In this case, one item will be added to the i-th layer that is not empty. 
+  7.6.1. Set i1 = TT j .  
+
+  7.6.2. Set n1 0
+i = ni +1.  
+1 1
+
+ 7.7. If ( TT j = 0 )  do: 
+In this case, one item will be added to an empty layer that corresponds to the j-th initial 
+layer. This layer is temporarily set at the last position in the current solution. 
+
+  7.7.1. Set i 0
+1 = r +1.  
+
+  7.7.2. Set r1 = r 0 +1.  
+  7.7.3. Set n1
+
+i =1, p1 = p , λ1 = λ .
+1 i1 j i j  
+
+1
+
+ 7.8. Set n1
+i = n0
+
+i −1.  
+ 7.9. If ( n1
+
+i = 0 )  do: 
+In this case, one layer becomes empty and disappears. 
+
+  7.9.1. If ( i < r 0 )  do: 
+   7.9.1.1. For k = i to r0 – 1 set n1
+
+k = n1
+k+ , p1 = 1 λ1
+
+1 k p 1
+k+1 , k = λk+1 . 
+
+   7.9.1.2. Set r1 = r0 – 1. 
+The next stage consists in putting the parameters into the increasing order of the demand 
+intensities. 
+
+ 7.10. For i = 1 to r1 – 1 do 
+  7.10.1. For j = i + 1 to r1 
+   7.10.1.1. If ( λ1 < λ1
+
+j i )  permute λ1
+j and λ1
+
+i , p1
+j and p1 n1 and 1
+
+i , j ni . 
+At this stage of the computation, a new solution S1 is available. 
+
+ 7.11. Compute the mean value of the revenue corresponding to solution S1. We denote this 
+value by Copt1. This value is obtained by applying Algorithm 2.2. 
+
+ 7.12. If Copt1 ≥ Copt 0  do: 
+  7.12.1. If Copt1 > Copt *  set S* = S1  and Copt* = Copt1. 
+  7.12.2. Set S 0 = S1 . 
+ 7.13. If Copt1 < Copt 0  do: 
+  7.13.1. Compute y = exp [ − ( Copt 0 −Copt1 ) / kkt ].  
+
+
+
+70       2 Dynamic Pricing Models 
+
+  7.13.2. Generate x at random on [ 0, 1 ]  (probability density 1). 
+  7.13.3. If ( x ≤ y )  set S 0 = S1 . 
+
+2.4.2.4 Numerical Example 
+
+In the case presented hereafter, the number of items to sold before time T  is 25 
+(n = 25). A one-to-one relationship has been established between five prices and 
+five demand intensities. These data are presented in Table 2.1. 
+
+Table 2.1 Price versus demand intensity 
+
+Price 20 14 10 7 5 
+Demand intensity 0.2 0.4 0.6 0.8 1  
+
+The salvage value is linear: each item can be sold on the second market for 2 
+monetary units. The computation starts with five layers numbered from the upper 
+to the lower layer. Each of them is initially made with 5 consecutive inventory 
+levels. The number of iterations made in the simulated annealing process is 5000.  
+
+Remark: A large number of choices (see Appendix A) are available when ap-
+plying simulated annealing for defining, in particular:  
+• the number of iterations; 
+• the evolution of the “temperature” that affects the selection of the next state; 
+• the “neighborhood” of a solution. 
+
+In Table 2.2, we give some intermediate results provided by the simulated an-
+nealing algorithm. The last one is the near-optimal solution. 
+
+Table 2.2 Some intermediate steps of the simulated annealing process 
+
+Iteration  Solution Mean value of the 
+number revenue (rounded) 
+
+ Layer size 5 5 5 5 5  
+1 Price 20 14 10 7 5 174 
+
+Demand intensity 0.2 0.4 0.6 0.8 1 
+ Layer size 2 4 6 7 6  
+
+16 Price 20 14 10 7 6 184 
+ Demand intensity 0.2 0.4 0.6 0.8 1 
+ Layer size 0 11 1 10 3  
+
+993 Price 20 14 10 7 6 199 
+ Demand intensity 0.2 0.4 0.6 0.8 1 
+ Layer size 0 13 1 10 1  
+
+1243 Price 20 14 10 7 6 202 
+ Demand intensity 0.2 0.4 0.6 0.8 1 
+ Layer size 0 1 15 1 8  
+
+3642 Price 20 14 10 7 6 205 
+ Demand intensity 0.2 0.4 0.6 0.8 1 
+ Layer size 0 1 17 7 0  
+
+4006 Price 20 14 10 7 6 211 
+ Demand intensity 0.2 0.4 0.6 0.8 1  
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       71 
+
+ 
+0.14
+
+0.12
+
+0.1
+
+0.08
+
+0.06
+
+0.04
+
+0.02
+
+0
+0 2 4 6 8 10 12 14 16 18 20 22 24
+
+Inventory level
+
+ 
+
+Figure 2.7 Probabilities at time T for the last structure of layers 
+
+Figure 2.7 provides the probabilities of the different inventory levels at time T  
+for the last structure of layers. 
+
+2.4.2.5 How to Use the Approach? 
+
+The previous approach is used on a periodic basis. This strategy corresponds to the 
+usual behavior of vendors: they choose a pricing policy on a given period (one or 
+two weeks for instance) and they reconsider the pricing policy for the next period 
+according to the inventory level at the end of the previous period, and so on. In 
+other words, they work on a rolling-horizon basis. 
+
+2.4.3 Price as a Function of Inventory Levels: a Special Case 
+
+We assume that the demand intensity, and thus the price, is different from one in-
+ventory level to the next. This kind of situation happens when the items are expen-
+sive (cars, for instance). In this particular case, it is possible to express analytically 
+the probability that k items are sold at the end of period T. 
+
+We denote by λi  the demand intensity when the inventory level is i and the 
+price of the next item is pi. The initial inventory level is n. Indeed 
+λn < λn−1 < ... < λ2 < λ1  and, as mentioned earlier, pn > pn−1 > ... > p2 > p1 . 
+
+Probability
+
+
+
+72       2 Dynamic Pricing Models 
+
+As in the previous section, Pr ( k, [ t1, t2 ] )  refers to the probability that k 
+items are sold in period [ t1, t2 ] . 
+
+Since at each inventory level the demand is generated by a Poisson process: 
+• Pr ( 0, [ 0, T ] ) = exp (− λn T )  
+
+T
+
+• Pr (1, [ 0, T ] ) = ∫ exp (−λn t ) λn exp [−λn−1 ( T − t ) ] dt  
+t=0
+
+λ λ
+= − n exp (−λn T ) − n exp (−λ  
+
+λ − λ λ − λ n−1 T )
+n n−1 n−1 n
+
+T
+
+• Pr (2, [ 0, T ] ) = ∫ Pr ( 1, [ 0, t ] ) λn−1 Pr ( 0, [ t, T ]dt  
+t=0
+
+λ T
+n λ= − n−1 exp ( − λn t ) exp [ − λn 2 ( T − t ) ] dt
+
+λn − λ ∫ −
+n−1 t=0
+
+λn λ
+T
+
+− n−1 ∫ exp ( − λn−1 t ) exp [ − λn−2 ( T − t ) ] dt
+λn−1 − λn t=0  
+
+⎧
+λ λ exp ( − λn T ) exp ( − λ
+
+= ⎨ + n−1 T )
+n n−1
+
+⎩ ( λn − λn−1 ) ( λn − λn−2 ) ( λn−1 − λn ) ( λn−1 − λn−2 )
+exp ( − λn−2 T ) ⎫
+
++
+( λn−2 − λn ) ( λn−2 − λ
+
+⎬
+n−1 ) ⎭
+
+At this level of the computation, it appears that the formula could be: 
+
+⎧ ⎫
+⎪ ⎪
+
+k−1 k ⎪
+Pr ( k, [ 0, T ] ) = ( −1) k ∏( )∑ ⎪ exp ( − λ ⎪
+
+n−i T )
+λ ⎪
+
+n−i ⎨ k ⎬  
+i=0 i=0 ⎪ ∏ ( λn i −λ ⎪
+
+⎪ − n− j )
+j 0 ⎪
+
+⎪ =
+⎩ j≠i ⎪⎭
+
+for k = 1,…, n–1 (2.30) 
+
+To complete the proof, we will show that if (2.30) holds for k, then it also holds 
+for k +1. If we express Pr ( k +1, [ 0, T ] )  according to Pr ( k, [ 0, t ] )  (Bayes’ 
+theorem), we obtain: 
+
+
+
+2.4 Stochastic Dynamic Pricing for Items with Salvage Values       73 
+
+T
+
+Pr ( k +1, [ 0, T ] ) = ∫ Pr ( k, [ 0, t ] ) λn−k Pr ( 0, [ t, T ] ) dt  
+t=0
+
+⎡ ⎧ ⎫ ⎤
+⎢ ⎪ ⎪ ⎥
+
+k−1 T ⎢ k ⎪
+1 ) k ∏ ( λn−i ) ∫ ⎢∑ ⎪ exp ( − λ ⎥
+
+= ( ⎨ n−i t ) ⎪⎪− k ⎬ λn−k exp [ − λn k ( T − t ) ] ⎥ dt  
+− −1
+
+i ⎢ i ⎥
+=0 t=0 =0
+
+⎢ ⎪∏ ( λn−i − λn− j ) ⎪ ⎥
+⎢ ⎪
+
+⎪ j ⎪
+=0
+
+⎣ ⎪ ⎥
+⎩ j≠i ⎭ ⎥⎦
+
+Developing this expression, we reach the following equality: 
+
+⎧ ⎫
+⎪ ⎪
+
+k k
+Pr ( k 1, [ 0, T ] ) ( 1 ) k+1 ∏ ( )∑ ⎪⎪ exp ( − λ
+
++ = − λ −i ⎨ n−i T ) ⎪⎪
+n k+1 ⎬
+
+i=0 i=0 ⎪ ∏ ( λ ⎪
+⎪ n−i − λn− j )
+⎪ j=0 ⎪
+⎩ j≠i ⎪⎭
+
+ (2.31) 
+⎧ ⎫
+⎪ ⎪
+
+k k
+− ( −1 ) k+1 ∏ ( λ − ) exp ( λ ⎪⎪ ⎪⎪
+
+n i − n−k−1 T )∑ 1
+⎨ k+1 ⎬
+
+i=0 i=0 ⎪ ∏ ( λ
+⎪ n−i − λ ⎪
+
+n− j )
+⎪ j=0 ⎪
+⎩ j≠i ⎪⎭
+
+Expanding the left side of the following equality, we obtain: 
+
+⎧ ⎫
+⎪ ⎪
+
+k+1
+
+∑ ⎪⎪ 1 ⎪⎪
+⎨ k+1 ⎬ = 0  
+
+i=0 ⎪ ( λn i − λ ⎪
+⎪ ∏ − n− j )
+⎪ j=0 ⎪
+⎩ j≠i ⎪⎭
+
+This equality can be rewritten as: 
+
+
+
+74       2 Dynamic Pricing Models 
+
+⎧ ⎫
+⎪ ⎪
+
+k
+
+∑ ⎪⎪ 1
+− ⎪⎪ 1
+
+⎨ k+1 ⎬ = k+1  
+i=0 ⎪ ( − ) ⎪ ( )
+
+⎪ ∏ λn−i λn− j ⎪ ∏ λn−k−1 − λn− j
+
+⎪ j=0 j=0
+⎩ j≠i ⎪⎭ j≠k+1
+
+Thus, Equation 2.31 becomes: 
+
+⎧ ⎫
+⎪ ⎪
+
+k k
+Pr ( k 1, [ 0,T ] ) ( 1 ) k 1 ( ) ⎪⎪ exp ( − λn i T )
+
+λ ⎪⎪+ = − + ∏ n i ∑ −
+− ⎨ k+1 ⎬
+
+i=0 i=0 ⎪ ( λn i − λ ⎪
+⎪ ∏ − n− j )
+
+j 0 ⎪
+⎪ =  
+⎩ j≠i ⎪⎭
+
+k
++ ( −1 ) k+1 ∏ ( λ − ) exp ( − − − ) 1
+
+n i λn k 1 T k+1
+i=0 ∏ ( λn−k−1 − λn− j )
+
+j=0
+j≠k+1
+
+⎧ ⎫
+⎪ ⎪
+
+k k+1 ⎪
+( 1 ) k+1 ∏ ( ⎪ exp ( − λ )
+− λ n i T ⎪⎪= n−i )∑ ⎨ −
+
+k+1 ⎬  
+i=0 i=0 ⎪ ( λ
+
+⎪ ∏ n−i − λn− j )⎪
+⎪ j=0 ⎪
+⎩ j≠i ⎪⎭
+
+This completes the computation. 
+Result 3 is derived from the above development. In this result, according to the 
+usual mathematical convention, we assume that if no factor remains in a product, 
+
+m
+then the product equals 1. For instance, ∏ai =1 if m < n. 
+
+i=n
+
+Result 3 
+The probability that k items are sold in period [ 0, T ] is given by (2.30) for 
+
+n−1
+k ∈{1,..., n −1 }. Furthermore, Pr ( n, [ 0, T ] ) = 1−∑ Pr ( k, [ 0, T ] ) . Then 
+
+k=0
+
+the mean value of the revenue can be obtained applying (2.29), Section 2.4.2.1. 
+
+
+
+Further Reading       75 
+
+2.5 Concluding Remarks 
+
+The goal of this chapter was to provide an insight into the domain of pricing mod-
+els. We limited ourselves to time-dated items with no supply option in a monopo-
+listic environment with myopic customers. Although these assumptions drastically 
+simplify the problem, many additional restrictive assumptions are required to ob-
+tain a mathematical model that is easy to analyze. 
+
+Nevertheless, the numerical development of the stochastic dynamic pricing 
+model with salvage values is an interesting tool when integrated in a rolling-
+horizon approach since it allows prices to be adjusted periodically according to the 
+inventory level and time, as required in the case of sales. Unfortunately, the one-
+to-one relationship between price and demand intensity remains under the respon-
+sibility of the user, and is not a risk-free task. 
+
+In our opinion, the pricing models are simply tools to help better understand 
+what dynamic pricing is rather than something to solve real-life problems. 
+
+Reference 
+
+Gallego G, Van Ryzin G (1994) Optimal dynamic pricing of inventories with stochastic demand 
+over finite horizons. Manag. Sci. 40:999–1020 
+
+Further Reading 
+
+Belobaba PP (1989) Application of a probabilistic decision model to airline seat inventory con-
+trol. Oper. Res. 37:183–197 
+
+Bitran GR, Mondschein SV (1995) An application of yield management to the hotel industry 
+considering multiple day stays. Oper. Res. 43:427–443 
+
+Bitran GR, Gilbert SM (1996) Managing hotel reservations with uncertain arrivals. Oper. Res. 
+44:35–49 
+
+Caroll WJ, Grimes RC (1995) Evolutionary change in product management: Experiences in the 
+car rental industry. Interfaces 25:84–104 
+
+Chen F, Federgruen A, Zheng YS (2001) Near-optimal pricing and replenishment strategies for a 
+retail/distribution system. Oper. Res. 49(6):839–853 
+
+Chen F, Federgruen A, Zheng YS (2001) Coordination mechanisms for a distribution system 
+with one supplier and multiple retailers. Manag. Sci. 47:693–708 
+
+Federgruen A, Heching A (1997) Combined pricing and inventory control under uncertainty. 
+Oper. Res. 47:454–475 
+
+Federgruen A, Zipkin P (1986) An inventory model with limited production capacity and uncer-
+tain demands. Math. Oper. Res. 11:193–215 
+
+Feng Y, Gallego G (1995) Optimal starting times for end-of-season sales and optimal stopping 
+times for promotional fares. Manag. Sci. 41:1371–1391 
+
+Gallego G, Van Ryzin G (1997) A multi-product dynamic pricing problem and its application to 
+network yield management. Oper. Res. 45:24–41 
+
+
+
+76       2 Dynamic Pricing Models 
+
+Gaimon C (1988) Simultaneous and dynamic price, production, inventory and capacity deci-
+sions. Eur. J. Oper. Res. 35:426–441 
+
+Garcia-Diaz A, Kuyumcu A (1997) A Cutting-Plane Procedure for Maximizing Revenues in 
+Yield Management. Comput. Ind. Eng. 33:51–54 
+
+Gerchak Y, Parlar M, Yee TKM (1985) Optimal rationing policies and production quantities for 
+products with several demand classes. Can. J. Adm. Sci. 2:161–176 
+
+Kimes SE (1989) Yield management: A tool for capacity constrained service firms. J. Oper. 
+Manag. 8:348–363 
+
+Levin Y, McGill J, Nediak M (2007) Price guarantees in dynamic pricing and revenue manage-
+ment. Oper. Res. 55(1):75–97 
+
+McGill J, Van Ryzin G (1999) Revenue management: Research overview and prospects. Transp. 
+Sci. 33(2):233–256 
+
+Petruzzi NC, Dada M (2002) Dynamic pricing and inventory control with learning. Nav. Res. 
+Log. Quart. 49:304–325 
+
+Raju CVL, Narahari Y, Ravikumar K (2006) Learning dynamic prices in electronic retail mar-
+kets with customer segmentation. Ann. Oper. Res. 143(1):59–75 
+
+Talluri KT, Van Ryzin GJ (2004) The Theory and Practice of Revenue Management. Kluwer 
+Academic Publishers, Norwell, MA 
+
+Van Mieghem J, Dada M (1999) Price versus production postponement: Capacity and competi-
+tion. Manag. Sci. 45(12):1631–1649 
+
+Vulcano G, Van Ryzin G, Maglaras C (2002) Optimal dynamic auctions for revenue manage-
+ment. Manag. Sci. 48(11):1388–1407 
+
+Zhao W, Zheng Y-S (2000) Optimal dynamic pricing for perishable assets with nonhomogene-
+ous demand. Manag. Sci. 46(3):375–388 
+
+ 
+ 
+
+
+
+http://www.springer.com/978-1-84996-016-8

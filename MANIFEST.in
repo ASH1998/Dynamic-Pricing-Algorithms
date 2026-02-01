@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+include pyproject.toml
+
+recursive-include src/neuroprice *.py *.yaml *.typed
+recursive-include templates *.yaml
+
+prune tests
+prune legacy
+prune .git
