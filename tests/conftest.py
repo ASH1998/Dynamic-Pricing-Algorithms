@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Dict
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -204,3 +205,135 @@ def empty_strategy_file(tmp_path: Path) -> Path:
     file_path = tmp_path / "empty.yaml"
     file_path.write_text("")
     return file_path
+
+
+# ---------------------------------------------------------------------------
+# New fixtures for Wave 2 tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def synthetic_data():
+    """Generate synthetic data using the data_utils module.
+
+    Returns:
+        DataFrame with synthetic pricing data including confounders.
+    """
+    from neuroprice.data_utils import generate_synthetic_data
+
+    return generate_synthetic_data(
+        n_samples=200,
+        n_products=5,
+        elasticity=-1.5,
+        base_demand=100.0,
+        include_confounders=True,
+        seed=42,
+    )
+
+
+@pytest.fixture
+def causal_config():
+    """Create a StrategyConfig suitable for causal inference testing.
+
+    Returns:
+        StrategyConfig with causal confounders configured.
+    """
+    from neuroprice.models import StrategyConfig
+
+    return StrategyConfig(
+        version="1.0",
+        name="causal_test",
+        model={"type": "causal", "algorithm": "PPO"},
+        pricing={"min_price": 10.0, "max_price": 100.0, "price_step": 1.0},
+        demand={
+            "elasticity": -1.5,
+            "base_demand": 100.0,
+            "seasonality": {"enabled": False, "period": 7},
+        },
+        inventory={"initial_stock": 100, "salvage_value": 0.0, "deadline_days": 30},
+        causal_config={
+            "treatment_variable": "price",
+            "outcome_variable": "demand",
+            "confounders": ["day_of_week", "promotion_active", "competitor_price"],
+        },
+        features={
+            "required": ["product_id", "current_price", "inventory_level", "demand"],
+            "optional": ["day_of_week", "promotion_active", "competitor_price"],
+        },
+    )
+
+
+@pytest.fixture
+def rl_config_rich():
+    """Create a StrategyConfig for rich observation RL testing.
+
+    Returns:
+        StrategyConfig with RL parameters for rich observation mode.
+    """
+    from neuroprice.models import StrategyConfig
+
+    return StrategyConfig(
+        version="1.0",
+        name="rl_rich_test",
+        model={"type": "rl", "algorithm": "PPO"},
+        pricing={"min_price": 10.0, "max_price": 50.0, "price_step": 1.0},
+        demand={
+            "elasticity": -1.5,
+            "base_demand": 300.0,
+            "seasonality": {"enabled": True, "period": 7},
+        },
+        inventory={"initial_stock": 50, "salvage_value": 2.0, "deadline_days": 20},
+        rl_config={
+            "learning_rate": 0.0003,
+            "gamma": 0.99,
+            "n_steps": 64,
+            "batch_size": 32,
+            "training_episodes": 100,
+        },
+        features={
+            "required": ["product_id", "current_price", "inventory_level", "demand"],
+            "optional": ["competitor_price"],
+        },
+    )
+
+
+@pytest.fixture
+def mock_trained_causal_estimator(causal_config, synthetic_data):
+    """Create a mock CausalEstimator that is pre-fitted.
+
+    Avoids the heavy EconML dependency by mocking the model.
+
+    Returns:
+        MagicMock configured to behave like a fitted CausalEstimator.
+    """
+    mock_estimator = MagicMock()
+    mock_estimator.is_fitted = True
+    mock_estimator._causal_effect = -2.5
+    mock_estimator._effect_stderr = 0.3
+    mock_estimator._n_observations = len(synthetic_data)
+    mock_estimator._model_t_score = 0.6
+    mock_estimator._model_y_score = 0.4
+    mock_estimator._cate_std = 0.8
+    mock_estimator._engineered_features = [
+        "day_of_week", "promotion_active", "competitor_price",
+        "day_of_week^2", "day_of_week promotion_active",
+        "day_of_week competitor_price", "promotion_active^2",
+    ]
+    mock_estimator.config = causal_config
+
+    # Mock estimate_prices
+    n = 5
+    mock_estimator.estimate_prices.return_value = (
+        np.array([50.0] * n),
+        np.array([0.75] * n),
+    )
+
+    # Mock effect_inference
+    mock_estimator.effect_inference.return_value = {
+        "effect": -2.5,
+        "stderr": 0.3,
+        "confidence_interval": (-3.1, -1.9),
+        "pvalue": 0.001,
+    }
+
+    return mock_estimator

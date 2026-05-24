@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ModelType(str, Enum):
@@ -46,6 +46,28 @@ class SeasonalityConfig(BaseModel):
 
     enabled: bool = Field(default=False, description="Enable seasonality adjustment")
     period: int = Field(default=7, ge=1, description="Seasonality period in days")
+
+
+class PreprocessingConfig(BaseModel):
+    """Configuration for input data preprocessing."""
+
+    fill_strategy: str = Field(
+        default="median",
+        description="Strategy for filling missing values: 'median', 'mean', or 'zero'",
+    )
+    outlier_method: str = Field(
+        default="iqr",
+        description="Outlier detection method: 'iqr'",
+    )
+    outlier_threshold: float = Field(
+        default=1.5,
+        gt=0,
+        description="IQR multiplier for outlier fence computation",
+    )
+    enable_cleaning: bool = Field(
+        default=True,
+        description="Whether to automatically clean input data during predict/train",
+    )
 
 
 class DemandConfig(BaseModel):
@@ -162,8 +184,6 @@ class StrategyConfig(BaseModel):
     causal_config: CausalConfig = Field(default_factory=CausalConfig)
     features: FeaturesConfig
     output: OutputConfig = Field(default_factory=OutputConfig)
+    preprocessing: PreprocessingConfig = Field(default_factory=PreprocessingConfig)
 
-    class Config:
-        """Pydantic configuration."""
-
-        extra = "forbid"  # Raise error on unknown fields
+    model_config = ConfigDict(extra="forbid")
