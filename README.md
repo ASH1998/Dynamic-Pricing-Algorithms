@@ -1,3 +1,5 @@
+
+
 <pre>
  ███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ██████╗ ██████╗ ██╗ ██████╗███████╗
  ████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██║██╔════╝██╔════╝
@@ -141,7 +143,7 @@ engine2.load_model("my_model")
 
 # State management for config rollback
 engine.save_state("before_experiment")
-engine.update_config(pricing__min_price=15.0)
+engine.update_config(**{"pricing.min_price": 15.0})
 engine.rollback("before_experiment")
 ```
 
